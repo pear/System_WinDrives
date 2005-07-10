@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package version="1.0">
+  <name>System_WinDrives</name>
+  <summary>List files drives on windows systems</summary>
+  <description>Provides functions to enumerate root directories
+  ("Drives") on Windows systems by using win32 api
+  calls.</description>
+  <license>PHP License</license>
+  
+  <maintainers>
+    <maintainer>
+      <user>cweiske</user>
+      <role>lead</role>
+      <name>Christian Weiske</name>
+      <email>cweiske@cweiske.de</email>
+    </maintainer>
+  </maintainers>
+  
+  <release>
+    <version>0.1.0</version>
+    <date>2005-07-10</date>
+    <notes>
+     Initial release
+    </notes>
+    <state>beta</state>
+    <filelist>
+      <dir name="/" baseinstalldir="System" role="php">
+          <file md5sum="9ca1eeba2ebaf0f02d94224cf6856c2e">WinDrives.php</file>
+        <dir name="examples" role="doc">
+            <file md5sum="794c14db692930412ce4bf57991d2442">example.php</file>
+        </dir>
+      </dir>
+    </filelist>
+  </release>
+  
+  <changelog>
+    <release>
+      <version>0.1.0</version>
+      <date>2005-07-10</date>
+      <notes>
+        Initial release
+      </notes>
+      <state>beta</state>
+    </release>
+  </changelog>
+  
+</package>
