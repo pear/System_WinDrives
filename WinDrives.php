@@ -1,25 +1,18 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-// +----------------------------------------------------------------------+
-// | PHP version 4                                                        |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 1997-2004 The PHP Group                                |
-// +----------------------------------------------------------------------+
-// | This source file is subject to version 3.0 of the PHP license,       |
-// | that is bundled with this package in the file LICENSE, and is        |
-// | available through the world-wide-web at the following url:           |
-// | http://www.php.net/license/3_0.txt.                                  |
-// | If you did not receive a copy of the PHP license and are unable to   |
-// | obtain it through the world-wide-web, please send a note to          |
-// | license@php.net so we can mail you a copy immediately.               |
-// +----------------------------------------------------------------------+
-// | Authors: Christian Weiske <cweiske@php.net>                          |
-// +----------------------------------------------------------------------+
-//
-// $Id$
+/**
+* Get drive information on windows systems
+*
+* PHP Versions 4 and 5
+*
+* @category System
+* @package  System_WinDrives
+* @author   Christian Weiske <cweiske@php.net>
+* @license  http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
+* @version  CVS: $Id$
+* @link     http://pear.php.net/package/System_WinDrives
+*/
 
-
-require_once('PEAR.php');
+require_once 'PEAR.php';
 
 if (!defined('SYSTEM_WINDRIVE_REMOVABLE')) {
     define('SYSTEM_WINDRIVE_ERROR'    , 1);
@@ -48,20 +41,21 @@ if (!defined('SYSTEM_WINDRIVE_REMOVABLE')) {
 * prevent this.
 *
 * On php5, the drive _names_ are always ''.
-*   
+*
 * You should not use this on non-Windows operating systems
 *
-* If you use this class in your projects, I ask you 
+* If you use this class in your projects, I ask you
 *   to send a real-world postcard to:
 *     Christian Weiske
 *     Dorfstrasse 42
 *     04683 Threna
 *     Germany
 *
-* @author Christian Weiske <cweiske@php.net>
-* @version 0.1
-* @access public
-* @package System
+* @category System
+* @package  System_WinDrives
+* @author   Christian Weiske <cweiske@php.net>
+* @license  http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
+* @link     http://pear.php.net/package/System_WinDrives
 */
 class System_WinDrives
 {
@@ -73,7 +67,7 @@ class System_WinDrives
     * @var boolean
     */
     var $bReadName = false;
-    
+
     /**
     * The win32api object to use
     * If it's null, it can't be used
@@ -81,7 +75,7 @@ class System_WinDrives
     * @var object
     */
     var $objApi   = null;
-    
+
     /**
     * The php_ffi object to use
     * If it's null, it can't be used
@@ -90,7 +84,7 @@ class System_WinDrives
     * @var object
     */
     var $objFFI   = null;
-    
+
     /**
     * List with titles for the drive types
     * @access public
@@ -105,15 +99,16 @@ class System_WinDrives
         SYSTEM_WINDRIVE_CDROM     => 'CD-Rom',
         SYSTEM_WINDRIVE_RAMDISK   => 'RAM-Disk'
     );
-    
-    
-    
+
+
+
     /**
     * Constructs the class and checks if the api
     * is available
     *
+    * @param boolean $bReadName If the drive names shall be read
+    *
     * @access public
-    * @param  boolean If the drive names shall be read
     */
     function System_WinDrives($bReadName = false)
     {
@@ -121,9 +116,9 @@ class System_WinDrives
             //PHP 5
             if (class_exists('FFI') || PEAR::loadExtension('ffi')) {
                 //we've got the dll
-                $strFuncs = "[lib='kernel32.dll'] long GetLogicalDriveStringsA(long nBufferLength, char *lpBuffer);"
-                          . "[lib='kernel32.dll'] long GetLogicalDrives();"
-                          . "[lib='kernel32.dll'] int GetDriveTypeA(char *lpRootPathName);";
+                $strFuncs     = "[lib='kernel32.dll'] long GetLogicalDriveStringsA(long nBufferLength, char *lpBuffer);"
+                              . "[lib='kernel32.dll'] long GetLogicalDrives();"
+                              . "[lib='kernel32.dll'] int GetDriveTypeA(char *lpRootPathName);";
                 $this->objFFI = new FFI($strFuncs);
             }
         } else {
@@ -134,49 +129,57 @@ class System_WinDrives
                 $this->objApi->registerfunction("long GetLogicalDriveStrings Alias GetLogicalDriveStrings (long &BufferLength, string &Buffer) From kernel32.dll");
                 $this->objApi->registerfunction("long GetLogicalDrives Alias GetLogicalDrives () From kernel32.dll");
                 $this->objApi->registerfunction("int GetDriveType Alias GetDriveType (string lpRootPathName) From kernel32.dll");
-                $this->objApi->registerfunction("long GetVolumeInformationA Alias GetVolumeInformation (string lpRootPathName, string &lpVolumeNameBuffer, int nVolumeNameSize, int &lpVolumeSerialNumber, int &lpMaximumComponentLength, int &lpFileSystemFlags, string &lpFileSystemNameBuffer, int nFileSystemNameSize) From kernel32.dll"); 
+                $this->objApi->registerfunction("long GetVolumeInformationA Alias GetVolumeInformation (string lpRootPathName, string &lpVolumeNameBuffer, int nVolumeNameSize, int &lpVolumeSerialNumber, int &lpMaximumComponentLength, int &lpFileSystemFlags, string &lpFileSystemNameBuffer, int nFileSystemNameSize) From kernel32.dll");
             }
         }
         $this->setReadName($bReadName);
     }
-    
-    
-    
+
+
+
     /**
     * returns an array containing information about all drives
     *
+    * @return array Array with drive infomation
+    *
     * @access public
-    * @return array   Array with drive infomation
     */
     function getDrivesInformation()
     {
-        $arInfo = array();
+        $arInfo   = array();
         $arDrives = $this->getDriveList();
         foreach ($arDrives as $strDrive) {
-            $arInfo[$strDrive]->type = $this->getDriveType($strDrive);
-            $arInfo[$strDrive]->name = $this->getDriveName($strDrive);
-            $arInfo[$strDrive]->typetitle = $this->getTypeTitle($arInfo[$strDrive]->type, $strDrive);
+            $arInfo[$strDrive]->type      = $this->getDriveType($strDrive);
+            $arInfo[$strDrive]->name      = $this->getDriveName($strDrive);
+            $arInfo[$strDrive]->typetitle = $this->getTypeTitle(
+                $arInfo[$strDrive]->type, $strDrive
+            );
         }
         return $arInfo;
     }
-    
-    
-    
+
+
+
     /**
     * Setter for "bReadName"
     *
+    * @param boolean $bReadName If the drive's names shall be read
+    *
+    * @return void
+    *
     * @access public
-    * @param boolean  If the drive's names shall be read
     */
     function setReadName($bReadName)
     {
         $this->bReadName = $bReadName;
     }
-    
-    
-    
+
+
+
     /**
-    * return the "bReadName" setting
+    * Returns the "bReadName" setting
+    *
+    * @return boolean If drive names should be read
     *
     * @access public
     */
@@ -184,39 +187,41 @@ class System_WinDrives
     {
         return $this->bReadName;
     }
-    
-    
-    
+
+
+
     /**
     * checks if the win32 api/ffi is available
     *
-    * @access public
     * @return boolean True if the api can be used, false if the dll is missing
+    *
+    * @access public
     */
     function isApiAvailable()
     {
         return ($this->objApi !== null || $this->objFFI !== null);
     }
-    
 
-        
+
+
     /**
     * returns a list with all drive paths
     * like "A:\", "C:\" and so
     *
+    * @return array Array with all drive paths
+    *
     * @access public
-    * @return array   Array with all drive paths
     */
     function getDriveList()
     {
         $arDrives = array();
-        
+
         if ($this->objApi !== null) {
             //set the length your variable should have
             $len = 105;
             //prepare an empty string
             $buffer = str_repeat("\0", $len + 1);
-            
+
             if ($this->objApi->GetLogicalDriveStrings($len, $buffer)) {
                 $arDrives = explode("\0", trim($buffer));
             } elseif ($drive_list = $this->objApi->GetLogicalDrives()) {
@@ -226,24 +231,26 @@ class System_WinDrives
             $drive_list = $this->objFFI->GetLogicalDrives();
             $arDrives   = $this->splitDriveNumber($drive_list);
         }
-        
+
         if (count($arDrives) == 0) {
             //nothing found... we'll guess
             $arDrives = $this->guessDriveList();
         }
-        
+
         return $arDrives;
     }
-    
-    
-    
+
+
+
     /**
     * splits a number returned by GetLogicalDrives*()
     * into an array with drive strings ("A:\", "C:\")
     *
+    * @param int $nDrives The number the function gave back
+    *
+    * @return array Array with drives
+    *
     * @access protected
-    * @param  int     The number the function gave back
-    * @return array   Array with drives
     */
     function splitDriveNumber($nDrives)
     {
@@ -257,19 +264,20 @@ class System_WinDrives
         }
         return $arDrives;
     }
-    
-    
-    
+
+
+
     /**
     * Tries to guess the drive list
     * The floppy "A:\" will no be in the list
     *
+    * @return array Array with all the drive paths like "A:\" and "C:\"
+    *
     * @access public
-    * @return array   Array with all the drive paths like "A:\" and "C:\"
     */
     function guessDriveList()
     {
-        $arDrives   = array();
+        $arDrives = array();
         //DON'T begin with A or B as a message box will pop up
         //if no floppy is provided
         //A=65, C=67, Z=90
@@ -280,15 +288,17 @@ class System_WinDrives
         }
         return $arDrives;
     }
-    
-    
-    
+
+
+
     /**
-    * returns the drive type
+    * Returns the drive type
+    *
+    * @param string $strDrive Drive path like "C:\"
+    *
+    * @return int Drive type, use "DRIVE_*" constants to enumerate it
     *
     * @access public
-    * @param  string  Drive path like "C:\"
-    * @return int     Drive type, use "DRIVE_*" constants to enumerate it
     */
     function getDriveType($strDrive)
     {
@@ -302,16 +312,18 @@ class System_WinDrives
         }
         return $nType;
     }
-    
-    
-    
+
+
+
     /**
-    * returns the title for a given drive type
+    * Returns the title for a given drive type.
+    *
+    * @param int    $nType    The drive type
+    * @param string $strDrive The drive path (like "A:\")
+    *
+    * @return string  The type title like "Harddisk"
     *
     * @access public
-    * @param  int     The drive type
-    * @param  string  The drive path (like "A:\")
-    * @return string  The type title like "Harddisk"
     */
     function getTypeTitle($nType, $strDrive)
     {
@@ -320,44 +332,42 @@ class System_WinDrives
         }
         return $this->arTypeTitles[$nType];
     }
-    
-    
-    
+
+
+
     /**
     * returns the name of the drive
     *
     * The name is the one the user has given the drive
     * like "Windows" or "Data"
     *
-    * The FFI version doesn't seem to work...
-    * $strFunc .= "[lib='kernel32.dll'] long GetVolumeInformationA(char lpRootPathName, char *lpVolumeNameBuffer, int nVolumeNameSize, "
-        . "long *lpVolumeSerialNumber, long *lpMaximumComponentLength, long *lpFileSystemFlags, char *lpFileSystemNameBuffer, int nFileSystemNameSize);";
+    * @param string $strDrive Drive path like "C:\"
+    *
+    * @return string The name of the drive
     *
     * @access public
-    * @param  string  Drive path like "C:\"
-    * @return string  The name of the drive
     */
     function getDriveName($strDrive)
     {
         if ($this->objApi === null || $this->bReadName === false) {
             return '';
         }
-        
+
         $strName                = '';
-        $serialNo               = 0; 
-        $MaximumComponentLength = 0; 
-        $FileSystemFlags        = 0; 
-        $VolumeNameSize         = 260; 
-        $VolumeNameBuffer       = str_repeat("\0", $VolumeNameSize); 
-        $FileSystemNameSize     = 260; 
-        $FileSystemNameBuffer   = str_repeat("\0", $FileSystemNameSize); 
-        if ($result = $this->objApi->GetVolumeInformation( 
-            $strDrive, $VolumeNameBuffer, $VolumeNameSize, 
-            $serialNo, $MaximumComponentLength, 
+        $serialNo               = 0;
+        $MaximumComponentLength = 0;
+        $FileSystemFlags        = 0;
+        $VolumeNameSize         = 260;
+        $VolumeNameBuffer       = str_repeat("\0", $VolumeNameSize);
+        $FileSystemNameSize     = 260;
+        $FileSystemNameBuffer   = str_repeat("\0", $FileSystemNameSize);
+        if ($result = $this->objApi->GetVolumeInformation(
+            $strDrive, $VolumeNameBuffer, $VolumeNameSize,
+            $serialNo, $MaximumComponentLength,
             $FileSystemFlags, $FileSystemNameBuffer, $FileSystemNameSize)) {
             $strName = trim($VolumeNameBuffer);
         }
-        
+
         return $strName;
     }
 }//class System_WinDrives
