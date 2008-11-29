@@ -74,7 +74,7 @@ class System_WinDrives
     * @access protected
     * @var object
     */
-    var $objApi   = null;
+    var $objApi = null;
 
     /**
     * The php_ffi object to use
@@ -83,7 +83,7 @@ class System_WinDrives
     * @access protected
     * @var object
     */
-    var $objFFI   = null;
+    var $objFFI = null;
 
     /**
     * List with titles for the drive types
@@ -116,9 +116,13 @@ class System_WinDrives
             //PHP 5
             if (class_exists('FFI') || PEAR::loadExtension('ffi')) {
                 //we've got the dll
-                $strFuncs     = "[lib='kernel32.dll'] long GetLogicalDriveStringsA(long nBufferLength, char *lpBuffer);"
-                              . "[lib='kernel32.dll'] long GetLogicalDrives();"
-                              . "[lib='kernel32.dll'] int GetDriveTypeA(char *lpRootPathName);";
+                $strFuncs = "[lib='kernel32.dll'] long"
+                            . " GetLogicalDriveStringsA(long nBufferLength,"
+                            . " char *lpBuffer);"
+                          . "[lib='kernel32.dll'] long GetLogicalDrives();"
+                          . "[lib='kernel32.dll'] int "
+                            . "GetDriveTypeA(char *lpRootPathName);";
+
                 $this->objFFI = new FFI($strFuncs);
             }
         } else {
@@ -126,10 +130,26 @@ class System_WinDrives
             if (class_exists('win32') || PEAR::loadExtension('w32api')) {
                 //we have the dll
                 $this->objApi =& new win32();
-                $this->objApi->registerfunction("long GetLogicalDriveStrings Alias GetLogicalDriveStrings (long &BufferLength, string &Buffer) From kernel32.dll");
-                $this->objApi->registerfunction("long GetLogicalDrives Alias GetLogicalDrives () From kernel32.dll");
-                $this->objApi->registerfunction("int GetDriveType Alias GetDriveType (string lpRootPathName) From kernel32.dll");
-                $this->objApi->registerfunction("long GetVolumeInformationA Alias GetVolumeInformation (string lpRootPathName, string &lpVolumeNameBuffer, int nVolumeNameSize, int &lpVolumeSerialNumber, int &lpMaximumComponentLength, int &lpFileSystemFlags, string &lpFileSystemNameBuffer, int nFileSystemNameSize) From kernel32.dll");
+                $this->objApi->registerfunction(
+                    'long GetLogicalDriveStrings Alias GetLogicalDriveStrings'
+                    . ' (long &BufferLength, string &Buffer) From kernel32.dll'
+                );
+                $this->objApi->registerfunction(
+                    'long GetLogicalDrives Alias GetLogicalDrives ()'
+                    . ' From kernel32.dll'
+                );
+                $this->objApi->registerfunction(
+                    'int GetDriveType Alias GetDriveType'
+                    . ' (string lpRootPathName) From kernel32.dll'
+                );
+                $this->objApi->registerfunction(
+                    'long GetVolumeInformationA Alias GetVolumeInformation'
+                    . ' (string lpRootPathName, string &lpVolumeNameBuffer,'
+                    . ' int nVolumeNameSize, int &lpVolumeSerialNumber,'
+                    . ' int &lpMaximumComponentLength, int &lpFileSystemFlags,'
+                    . ' string &lpFileSystemNameBuffer,'
+                    . ' int nFileSystemNameSize) From kernel32.dll'
+                );
             }
         }
         $this->setReadName($bReadName);
