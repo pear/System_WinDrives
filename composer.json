@@ -1,0 +1,28 @@
+{
+    "authors": [
+        {
+            "email": "cweiske@cweiske.de",
+            "name": "Christian Weiske",
+            "role": "Lead"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "./"
+        ]
+    },
+    "description": "More info available on: http://pear.php.net/package/System_WinDrives",
+    "license": "PHP License",
+    "name": "pear/system_windrives",
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=System_WinDrives",
+        "source": "https://github.com/pear/System_WinDrives"
+    },
+    "type": "library",
+    "require": {
+        "pear/pear_exception": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    }
+}
